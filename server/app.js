@@ -1,5 +1,4 @@
 const WebSocket = require("ws");
-import * as types from "../src/constants/ActionTypes";
 
 const wss = new WebSocket.Server({ port: 8989 });
 
@@ -23,18 +22,8 @@ wss.on("connection", ws => {
       case "ADD_USER":
         index = users.length;
         users.push({ name: data.name, id: index + 1 });
-        ws.send(
-          JSON.stringify({
-            type: types.USERS_LIST
-          })
-        );
-        broadcast(
-          {
-            type: types.USERS_LIST,
-            users
-          },
-          ws
-        );
+        ws.send(JSON.stringify({ type: "USERS_LIST", users }));
+        broadcast({ type: "USERS_LIST", users }, ws);
         break;
       case "ADD_MESSAGE":
         // Everybody connected to the server gets that message
@@ -54,12 +43,6 @@ wss.on("connection", ws => {
   // When websocket closes, it closes the user for that user list (splices to remove user).
   wss.on("close", () => {
     users.splice(index, 1);
-    broadcast(
-      {
-        type: "USERS_LIST",
-        users
-      },
-      ws
-    );
+    broadcast({ type: "USERS_LIST", users }, ws);
   });
 });
